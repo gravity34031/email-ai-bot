@@ -23,6 +23,14 @@ from g4f.client import Client
 client = Client()
 
 
+from email import header
+def decode_mime_header(encoded_header):
+    decoded_bytes, encoding = header.decode_header(encoded_header)[0]
+    if isinstance(decoded_bytes, bytes):
+        return decoded_bytes.decode(encoding or "utf-8")
+    return decoded_bytes
+
+
 
 def get_latest_email(mail):
     mail.select("inbox")
@@ -50,7 +58,7 @@ def get_latest_email(mail):
     mail.store(latest_email_id, "+FLAGS", "\\Seen")  # Помечаем как прочитанное
 
 
-    return sender, subject, body.strip()
+    return sender, decode_mime_header(subject), body.strip()
 
 
 
@@ -101,11 +109,14 @@ def get_g4f_response(prompt):
 def check_and_reply(mail):
     try:
         sender, subject, question = get_latest_email(mail)
-        s = subject.lower()
-        condition = 'ai' in s or 'ии' in s or 'бот' in s or 'помоги' in s or 'малая' in s or 'письк' in s, 'алгоритм' in s
-        if not condition:
-            print('Новое письмо не подходит под условие, нет ключевого слова в теме письма')
-            return None
+        if subject is not None and question is not None:
+            s = subject.lower()
+            condition = 'ai' in s or 'ии' in s or 'бот' in s or 'помоги' in s or 'малая' in s or 'письк' in s or 'алгоритм' in s
+            if not condition:
+                print('Новое письмо не подходит под условие, нет ключевого слова в теме письма')
+                return None
+            if 'gravity2507@gmail.com' in sender:
+                print('Новое письмо не подходит под условие, отправитель - gravity2507@gmail.com')
     except Exception as e:
         print('Ошибка')
         return None
@@ -125,7 +136,7 @@ def wait_for_email():
     while True:
         print("⏳ Проверяем новые письма...")
         check_and_reply(mail)  # Функция для обработки новых писем
-        time.sleep(10)  # Ждём 30 секунд перед следующей проверкой
+        time.sleep(10)  # Ждём 10 секунд перед следующей проверкой
 
 
 # 📌 Запуск бота
