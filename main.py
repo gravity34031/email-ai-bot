@@ -101,6 +101,11 @@ def get_g4f_response(prompt):
 def check_and_reply(mail):
     try:
         sender, subject, question = get_latest_email(mail)
+        s = subject.lower()
+        condition = 'ai' in s or 'ии' in s or 'бот' in s or 'помоги' in s or 'малая' in s or 'письк' in s, 'алгоритм' in s
+        if not condition:
+            print('Новое письмо не подходит под условие, нет ключевого слова в теме письма')
+            return None
     except Exception as e:
         print('Ошибка')
         return None
