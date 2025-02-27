@@ -19,11 +19,8 @@ EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
 
 from g4f.client import Client
-from g4f.Provider import OpenaiChat, Gemini
-client = Client(    
-    provider=OpenaiChat,
-    image_provider=Gemini,)
-
+from g4f.Provider import RetryProvider, DeepInfraChat
+client = Client()
 
 from email import header
 def decode_mime_header(encoded_header):
@@ -84,6 +81,7 @@ def get_g4f_response(prompt, timeout=20):
     start_time = time.time()
 
     try:
+        print(client.__dict__)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
