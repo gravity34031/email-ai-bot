@@ -104,7 +104,10 @@ async def get_g4f_response_async(prompt, timeout=20):
     return collected_response.strip() if collected_response else "Ответ не получен"
 
 def get_g4f_response(prompt):
-    return asyncio.run(get_g4f_response_async(prompt))
+    try:
+        return asyncio.run(get_g4f_response_async(prompt))
+    except Exception as e:
+        return f"Ошибка при генерации ответа: {str(e)}"
 
 def check_and_reply(mail):
     try:
