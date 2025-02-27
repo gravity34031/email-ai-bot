@@ -19,7 +19,10 @@ EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
 
 from g4f.client import Client
-client = Client()
+from g4f.Provider import OpenaiChat, Gemini
+client = Client(    
+    provider=OpenaiChat,
+    image_provider=Gemini,)
 
 
 from email import header
@@ -85,17 +88,18 @@ def get_g4f_response(prompt, timeout=20):
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             web_search=True,
-            # stream=True  # Потоковый вывод
+            stream=True  # Потоковый вывод
         )
 
-        collected_response = response.choices[0].message.content
-        # for chunk in response:
-        #     if chunk.choices and chunk.choices[0].delta.content:
-        #         collected_response += chunk.choices[0].delta.content
+        # collected_response = response.choices[0].message.content
+
+        for chunk in response:
+            if chunk.choices and chunk.choices[0].delta.content:
+                collected_response += chunk.choices[0].delta.content or ""
             
-        #     if time.time() - start_time > timeout:
-        #         collected_response += " [Ответ обрезан по таймауту]"
-        #         break
+            if time.time() - start_time > timeout:
+                collected_response += " [Ответ обрезан по таймауту]"
+                break
 
     except Exception as e:
         collected_response = f"Ошибка при генерации ответа: {str(e)}"
@@ -121,10 +125,10 @@ def check_and_reply(mail):
         print(f"📩 Новое письмо от {sender}, тема: {subject}, текст: {question}")
         
         response = get_g4f_response(question)
-        # print(f"✅ Ответ сформирован: {response}")
+        print(f"✅ Ответ сформирован: {response}")
 
         send_email(sender, f"Re: {subject}", response)
-        # print(f"📨 Ответ отправлен: {response}")
+        print(f"📨 Ответ отправлен: {response}")
 
 
 def wait_for_email():
