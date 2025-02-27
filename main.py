@@ -3,7 +3,6 @@ import imaplib
 import smtplib
 import email
 import time
-import asyncio
 from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
@@ -77,8 +76,7 @@ def send_email(to_email, subject, body):
         print("Error sending email:", e)
         return False
 
-
-async def get_g4f_response_async(prompt, timeout=20):
+def get_g4f_response(prompt, timeout=20):
     collected_response = ""
     start_time = time.time()
 
@@ -87,27 +85,23 @@ async def get_g4f_response_async(prompt, timeout=20):
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             web_search=True,
-            stream=True  # Потоковый вывод
+            # stream=True  # Потоковый вывод
         )
 
-        for chunk in response:
-            if chunk.choices and chunk.choices[0].delta.content:
-                collected_response += chunk.choices[0].delta.content
+        collected_response = response.choices[0].message.content
+        # for chunk in response:
+        #     if chunk.choices and chunk.choices[0].delta.content:
+        #         collected_response += chunk.choices[0].delta.content
             
-            if time.time() - start_time > timeout:
-                collected_response += " [Ответ обрезан по таймауту]"
-                break
+        #     if time.time() - start_time > timeout:
+        #         collected_response += " [Ответ обрезан по таймауту]"
+        #         break
 
     except Exception as e:
         collected_response = f"Ошибка при генерации ответа: {str(e)}"
 
     return collected_response.strip() if collected_response else "Ответ не получен"
 
-def get_g4f_response(prompt):
-    try:
-        return asyncio.run(get_g4f_response_async(prompt))
-    except Exception as e:
-        return f"Ошибка при генерации ответа: {str(e)}"
 
 def check_and_reply(mail):
     try:
@@ -127,10 +121,10 @@ def check_and_reply(mail):
         print(f"📩 Новое письмо от {sender}, тема: {subject}, текст: {question}")
         
         response = get_g4f_response(question)
-        print(f"✅ Ответ сформирован: {response}")
+        # print(f"✅ Ответ сформирован: {response}")
 
         send_email(sender, f"Re: {subject}", response)
-        print(f"📨 Ответ отправлен: {response}")
+        # print(f"📨 Ответ отправлен: {response}")
 
 
 def wait_for_email():
@@ -139,7 +133,7 @@ def wait_for_email():
     while True:
         print("⏳ Проверяем новые письма...")
         check_and_reply(mail)  # Функция для обработки новых писем
-        time.sleep(10)  # Ждём 10 секунд перед следующей проверкой
+        time.sleep(5)  # Ждём 10 секунд перед следующей проверкой
 
 
 # 📌 Запуск бота
