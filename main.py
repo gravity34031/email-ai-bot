@@ -5,7 +5,6 @@ import email
 import time
 import asyncio
 from email.mime.text import MIMEText
-from imapclient import IMAPClient
 import os
 from dotenv import load_dotenv
 
