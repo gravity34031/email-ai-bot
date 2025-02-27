@@ -19,8 +19,8 @@ EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
 
 from g4f.client import Client
-from g4f.Provider import RetryProvider, DeepInfraChat
 client = Client()
+
 
 from email import header
 def decode_mime_header(encoded_header):
@@ -81,19 +81,16 @@ def get_g4f_response(prompt, timeout=20):
     start_time = time.time()
 
     try:
-        print(client.__dict__)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             web_search=True,
             stream=True  # Потоковый вывод
         )
-
-        # collected_response = response.choices[0].message.content
-
+        
         for chunk in response:
             if chunk.choices and chunk.choices[0].delta.content:
-                collected_response += chunk.choices[0].delta.content or ""
+                collected_response += chunk.choices[0].delta.content
             
             if time.time() - start_time > timeout:
                 collected_response += " [Ответ обрезан по таймауту]"
@@ -135,7 +132,7 @@ def wait_for_email():
     while True:
         print("⏳ Проверяем новые письма...")
         check_and_reply(mail)  # Функция для обработки новых писем
-        time.sleep(5)  # Ждём 10 секунд перед следующей проверкой
+        time.sleep(10)  # Ждём 10 секунд перед следующей проверкой
 
 
 # 📌 Запуск бота
